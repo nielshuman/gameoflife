@@ -5,9 +5,9 @@ noise_frequency = 0.02
 
 # We create 2 matrices, the arena and the one to calculate nb of living neighbours 
 # arena        <- matrix(data = 0, nrow = ROWS, ncol = COLS, byrow = FALSE, dimnames = NULL)
+arena <- pmax(sign(noise_perlin(c(ROWS,COLS),frequency = noise_frequency)), 0)
 living_neigh <- matrix(data = 0, nrow = nrow(arena), ncol = ncol(arena))
 
-arena <- pmax(sign(noise_perlin(c(ROWS,COLS),frequency = noise_frequency)), 0)
 
 #arena[2:7, 3:6] = 1 # Init cell block of 2-7 x 3-6 as alive?
 
