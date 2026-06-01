@@ -53,3 +53,10 @@ display_arena = function(arena) {
 }
 
 display_arena(arena)
+
+for (generation in 1:5) {
+  arena <- run_iter(arena)
+  Sys.sleep(0.2)
+  print(generation)
+  
+}
