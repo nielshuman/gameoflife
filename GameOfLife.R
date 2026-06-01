@@ -7,7 +7,7 @@ living_neigh <- matrix(data = 0, nrow = nrow(arena), ncol = ncol(arena))
 
 arena[2:7, 3:6] = 1 # Init cell block of 2-7 x 3-6 as alive?
 
-# Put the nb of living neighbours for each cell in the corresponding one in that matrix
+# Put the nb of living neighbours for each cell in the corresponding one in that matrixg
 for (R in 2:11) { # why 2:11??
   for (C in 2:11) {
     living_neigh[R,C] <- (
