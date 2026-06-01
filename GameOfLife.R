@@ -1,3 +1,4 @@
+library(ambient)
 ROWS = 40
 COLS = 40
 noise_frequency = 0.02
