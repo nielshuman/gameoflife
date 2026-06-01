@@ -1,4 +1,4 @@
-ROWS = 20
+ROWS = 10
 COLS = 10
 
 # We create 2 matrices, the arena and the one to calculate nb of living neighbours 
