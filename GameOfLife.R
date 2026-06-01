@@ -1,5 +1,5 @@
-ROWS = 10
-COLS = 10
+ROWS = 12
+COLS = 12
 
 # We create 2 matrices, the arena and the one to calculate nb of living neighbours 
 arena        <- matrix(data = 0, nrow = ROWS, ncol = COLS, byrow = FALSE, dimnames = NULL)
