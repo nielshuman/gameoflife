@@ -88,8 +88,8 @@ for(step in 1:N_STEPS) {
     
     if(ants$state[i] == "searching") {
       dir <-
-        0.80 * from_nest +
-        0.20 * noise
+        0.50 * from_nest +
+        0.50 * noise
     }
     
     if(ants$state[i] == "returning") {
@@ -121,8 +121,6 @@ for(step in 1:N_STEPS) {
         start = 1,
         end = 0
       ),
-      xlab = "",
-      ylab = "",
       axes = FALSE,
       main = paste(
         "Step",
