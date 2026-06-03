@@ -9,6 +9,8 @@ N_STEPS = 1000
 SPAWN_INTERVAL = 5
 DRAW_INTERVAL = 2
 STEP_SIZE = 1
+DETECT_RADIUS = 6
+REPULSION_STRENGTH = 0.6 #ranging from 0 - 1
 
 nest <- c(50, 25)
 food_spawn <- c(50, 95)
@@ -86,10 +88,39 @@ for(step in 1:N_STEPS) {
       nest - pos
     )
     
+    # Cause no pheromone for now; ants 'know' location of food for now
+    
+    to_food <- unit_vec(
+      food_spawn - pos
+    )
+    
     if(ants$state[i] == "searching") {
       dir <-
-        0.50 * from_nest +
-        0.50 * noise
+        # 0.70 * from_nest +
+        0.80 * to_food +
+        0.20 * noise
+      
+      # traffic rule: move out of way for returning ants
+      returners <- which(ants$state == "returning")
+      
+      if(length(returners) > 0) {
+        diffs <- cbind(ants$x[returners] - pos[1],
+                       ants$y[returners] - pos[2])
+        dists <- sqrt(rowSums(diffs^2))
+        near  <- which(dists > 0 & dists < DETECT_RADIUS)
+        if(length(near) > 0) {
+          # weighted average push-away vector (the closer the stronger)
+          weights  <- 1 / dists[near]
+          away_vec <- colSums(-diffs[near, , drop = FALSE] * weights)
+          away_vec <- unit_vec(away_vec)
+          # step sideways: keep only the perpendicular component
+          fwd      <- unit_vec(dir)
+          side     <- away_vec - sum(away_vec * fwd) * fwd
+          side     <- unit_vec(side)
+          dir <- unit_vec((1 - REPULSION_STRENGTH) * dir +
+                            REPULSION_STRENGTH      * side)
+        }
+      }
     }
     
     if(ants$state[i] == "returning") {
