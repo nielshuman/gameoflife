@@ -1,6 +1,11 @@
-# Things to think about maybe?
+# Ant stuff
 
-- What do we do with edge cases?
-  - Ignore them –\> permanently dead?
-  - wrapping around (like snake)
-  - expanding until memory runs out? haha
+Loaded:
+  pheromone attraction
+  strong nest attraction
+  noise
+
+Unloaded:
+  pheromone attraction
+  weak repulsion from nest
+  noise
