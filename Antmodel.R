@@ -1,6 +1,6 @@
 # set seed for pseudorandomness
 
-set.seed(1)
+set.seed(10)
 
 GRID_SIZE = 100
 
@@ -14,7 +14,7 @@ PRIORITY_DETECT_RADIUS = 5
 PRIORITY_REPULSION_STRENGTH = 0.6 #ranging from 0 - 1
 
 SELF_REPULSION_STRENGTH = 0.6
-SELF_DETECT_RADIUS = 2
+SELF_DETECT_RADIUS = 1
 
 nest <- c(50, 25)
 food_spawn <- c(50, 95)
@@ -24,6 +24,7 @@ ants <- data.frame(
   y = numeric(),
   hx = numeric(),
   hy = numeric(),
+  startTime = numeric(),
   state = character() # searching | returning
 )
 
@@ -58,7 +59,8 @@ for(step in 1:N_STEPS) {
         y = food_spawn[2],
         hx = 0,
         hy = -1,
-        state = "returning"
+        state = "returning",
+        startTime = step
       )
     )
     
@@ -70,7 +72,8 @@ for(step in 1:N_STEPS) {
         y = nest[2],
         hx = 0,
         hy = 1,
-        state = "searching"
+        state = "searching",
+        startTime = step
       )
     )
   }
@@ -125,22 +128,6 @@ for(step in 1:N_STEPS) {
                             PRIORITY_REPULSION_STRENGTH      * side)
         }
       }
-    
-      # collision avoidance
-      other_searchers <- which(ants$state == "searching" & seq_len(nrow(ants)) != i)
-      if(length(other_searchers) > 0) {
-        diffs2 <- cbind(ants$x[other_searchers] - pos[1],
-                        ants$y[other_searchers] - pos[2])
-        dists2 <- sqrt(rowSums(diffs2^2))
-        near2  <- which(dists2 > 0 & dists2 < SELF_DETECT_RADIUS)
-        
-        if(length(near2) > 0) {
-          weights2  <- 1 / dists2[near2]
-          repel_vec <- unit_vec(colSums(-diffs2[near2, , drop = FALSE] * weights2))
-          dir <- unit_vec(dir + SELF_REPULSION_STRENGTH * repel_vec)
-        }
-      }
-      
       }
     
     
@@ -149,23 +136,19 @@ for(step in 1:N_STEPS) {
       dir <-
         0.80 * to_nest +
         0.20 * noise
-      
-      
-      # collision avoidance
-      other_returners <- which(ants$state == "returning" & seq_len(nrow(ants)) != i)
-      if(length(other_returners) > 0) {
-        diffs3 <- cbind(ants$x[other_returners] - pos[1],
-                        ants$y[other_returners] - pos[2])
-        dists3 <- sqrt(rowSums(diffs3^2))
-        near3  <- which(dists3 > 0 & dists3 < SELF_DETECT_RADIUS)
-        
-        if(length(near3) > 0) {
-          weights3  <- 1 / dists3[near3]
-          repel_vec <- unit_vec(colSums(-diffs3[near3, , drop = FALSE] * weights3))
-          dir <- unit_vec(dir + SELF_REPULSION_STRENGTH * repel_vec)
-        }
-      }
     }
+    
+      # collision avoidance
+      diffs2 <- cbind(ants$x - pos[1],
+                      ants$y - pos[2])
+      dists2 <- sqrt(rowSums(diffs2^2))
+      near2  <- which(dists2 > 0 & dists2 < SELF_DETECT_RADIUS)
+      
+      if(length(near2) > 0) {
+        weights2  <- 1 / dists2[near2]
+        repel_vec <- unit_vec(colSums(-diffs2[near2, , drop = FALSE] * weights2))
+        dir <- unit_vec(dir + SELF_REPULSION_STRENGTH * repel_vec)
+      }
     
     dir <- unit_vec(dir)
     
