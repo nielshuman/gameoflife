@@ -4,21 +4,25 @@ set.seed(2)
 
 GRID_SIZE = 100
 
-MAX_ANTS = 125
-N_STEPS = 2500
-SPAWN_INTERVAL = 3
-DRAW_INTERVAL = 2
-STEP_SIZE = 1
-LOAD_SPEED_MULTIPLIER = 0.75
-FOOD_RADIUS = 3 
-NEST_RADIUS = 3
-
+N_STEPS = 300
+DRAW_INTERVAL = 50
 
 PRIORITY_DETECT_RADIUS = 5
-PRIORITY_REPULSION_STRENGTH = 0.6 #ranging from 0 - 1
+PRIORITY_REPULSION_STRENGTH = 0.7 #ranging from 0 - 1
 
-SELF_REPULSION_STRENGTH = 0.9
+LOAD_SPEED_MULTIPLIER = 0.75
+
+MAX_ANTS = 110
+
+FOOD_RADIUS = 3
+NEST_RADIUS = 3
+SPAWN_INTERVAL = 3
+
+SELF_REPULSION_STRENGTH = 3
 SELF_DETECT_RADIUS = 2
+STEP_SIZE = 1
+
+food_count = 0
 
 nest <- c(50, 5)
 food_spawn <- c(50, 95)
@@ -176,11 +180,21 @@ for(step in 1:N_STEPS) {
                             (ants$y[searchers] - food_spawn[2])^2)
     ants$state[searchers[dists_to_food < FOOD_RADIUS]] <- "returning"
   }
+
   returners <- which(ants$state == "returning")
+  
   if (length(returners) > 0) {
-    dists_to_nest <- sqrt((ants$x[returners] - nest[1])^2 +
-                            (ants$y[returners] - nest[2])^2)
-    ants$state[returners[dists_to_nest < NEST_RADIUS]] <- "searching"
+    
+    dists_to_nest <- sqrt(
+      (ants$x[returners] - nest[1])^2 +
+        (ants$y[returners] - nest[2])^2
+    )
+    
+    arrived <- returners[dists_to_nest < NEST_RADIUS]
+    
+    food_count <- food_count + length(arrived)
+    
+    ants$state[arrived] <- "searching"
   }
   
   
@@ -188,7 +202,7 @@ for(step in 1:N_STEPS) {
   # Draw
   # -----
   
-  if(step %% DRAW_INTERVAL == 0) {
+  if(step %% DRAW_INTERVAL == 0 | step == N_STEPS) {
     plot(
       NA,
       xlim = c(1, GRID_SIZE),
@@ -201,7 +215,9 @@ for(step in 1:N_STEPS) {
         "Step",
         step,
         "| ants:",
-        nrow(ants)
+        nrow(ants),
+        "| food:",
+        food_count
       )
     )
     
