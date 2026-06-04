@@ -7,6 +7,8 @@ GRID_SIZE = 100
 N_STEPS = 300
 DRAW_INTERVAL = 50
 
+SAVE_STEPS <- c(50, 120, 180, 300)
+
 PRIORITY_DETECT_RADIUS = 5
 PRIORITY_REPULSION_STRENGTH = 0.7 #ranging from 0 - 1
 
@@ -49,6 +51,44 @@ unit_vec <- function(v) {
     return(c(0,0))
   
   v / n
+}
+
+
+draw_scene <- function(step) {
+  
+  plot(
+    NA,
+    xlim = c(1, GRID_SIZE),
+    ylim = c(1, GRID_SIZE),
+    xlab = "",
+    ylab = "",
+    axes = FALSE,
+    asp = 1000 / 500,
+    main = paste(
+      "Step", step,
+      "| ants:", nrow(ants),
+      "| food:", food_count
+    )
+  )
+  
+  points(
+    ants$x[ants$state == "returning"],
+    ants$y[ants$state == "returning"],
+    col = "darkgreen",
+    pch = 16,
+    cex = 0.7
+  )
+  
+  points(
+    ants$x[ants$state == "searching"],
+    ants$y[ants$state == "searching"],
+    col = "orange",
+    pch = 16,
+    cex = 0.7
+  )
+  
+  points(nest[1], nest[2], pch = 15, col = "blue", cex = 3)
+  points(food_spawn[1], food_spawn[2], pch = 15, col = "red", cex = 3)
 }
 
 
@@ -202,59 +242,17 @@ for(step in 1:N_STEPS) {
   # Draw
   # -----
   
-  if(step %% DRAW_INTERVAL == 0 | step == N_STEPS) {
-    plot(
-      NA,
-      xlim = c(1, GRID_SIZE),
-      ylim = c(1, GRID_SIZE),
-      xlab = "",
-      ylab = "",
-      axes = FALSE,
-      asp = 1,
-      main = paste(
-        "Step",
-        step,
-        "| ants:",
-        nrow(ants),
-        "| food:",
-        food_count
-      )
-    )
+  if(step %in% SAVE_STEPS) {
+    svg(sprintf("images/PR_5/step_%03d.svg", step), width = 10, height = 5)
+    draw_scene(step)
+    dev.off()
+  }
+  
+  if(step %% DRAW_INTERVAL == 0 ||
+     step %in% SAVE_STEPS ||
+     step == N_STEPS) {
     
-    # Returning ants (carrying food)
-    points(
-      ants$x[ants$state == "returning"],
-      ants$y[ants$state == "returning"],
-      col = "darkgreen",
-      pch = 16,
-      cex = 0.7
-    )
-    
-    # Searching ants
-    points(
-      ants$x[ants$state == "searching"],
-      ants$y[ants$state == "searching"],
-      col = "orange",
-      pch = 16,
-      cex = 0.7
-    )
-    
-    points(
-      nest[1],
-      nest[2],
-      pch = 15,
-      col = "blue",
-      cex = 3
-    )
-    
-    points(
-      food_spawn[1],
-      food_spawn[2],
-      pch = 15,
-      col = "red",
-      cex = 3
-    )
-    
+    draw_scene(step)
     Sys.sleep(0.1)
   }
 }
