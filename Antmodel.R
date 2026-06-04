@@ -1,22 +1,26 @@
 # set seed for pseudorandomness
 
-set.seed(10)
+set.seed(2)
 
 GRID_SIZE = 100
 
-MAX_ANTS = 100
-N_STEPS = 1000
-SPAWN_INTERVAL = 2
+MAX_ANTS = 125
+N_STEPS = 2500
+SPAWN_INTERVAL = 3
 DRAW_INTERVAL = 2
 STEP_SIZE = 1
+LOAD_SPEED_MULTIPLIER = 0.75
+FOOD_RADIUS = 3 
+NEST_RADIUS = 3
+
 
 PRIORITY_DETECT_RADIUS = 5
 PRIORITY_REPULSION_STRENGTH = 0.6 #ranging from 0 - 1
 
-SELF_REPULSION_STRENGTH = 0.6
-SELF_DETECT_RADIUS = 1
+SELF_REPULSION_STRENGTH = 0.9
+SELF_DETECT_RADIUS = 2
 
-nest <- c(50, 25)
+nest <- c(50, 5)
 food_spawn <- c(50, 95)
 
 ants <- data.frame(
@@ -52,17 +56,17 @@ for(step in 1:N_STEPS) {
   
   if(step %% SPAWN_INTERVAL == 0 && nrow(ants) < MAX_ANTS) { # 
     # Loaded ant starts at foodspawn
-    ants <- rbind(
-      ants,
-      data.frame(
-        x = food_spawn[1],
-        y = food_spawn[2],
-        hx = 0,
-        hy = -1,
-        state = "returning",
-        startTime = step
-      )
-    )
+    # ants <- rbind(
+    #   ants,
+    #   data.frame(
+    #     x = food_spawn[1],
+    #     y = food_spawn[2],
+    #     hx = 0,
+    #     hy = -1,
+    #     state = "returning",
+    #     startTime = step
+    #   )
+    # )
     
     # unloaded ant starts at nest
     ants <- rbind(
@@ -128,14 +132,16 @@ for(step in 1:N_STEPS) {
                             PRIORITY_REPULSION_STRENGTH      * side)
         }
       }
+      
+      speed = STEP_SIZE
       }
-    
-    
     
     if(ants$state[i] == "returning") {
       dir <-
         0.80 * to_nest +
         0.20 * noise
+      
+      speed = STEP_SIZE * LOAD_SPEED_MULTIPLIER
     }
     
       # collision avoidance
@@ -153,10 +159,10 @@ for(step in 1:N_STEPS) {
     dir <- unit_vec(dir)
     
     ants$x[i] <- ants$x[i] +
-      STEP_SIZE * dir[1]
+      speed * dir[1]
     
     ants$y[i] <- ants$y[i] +
-      STEP_SIZE * dir[2]
+      speed * dir[2]
 }
   
   
@@ -168,13 +174,13 @@ for(step in 1:N_STEPS) {
   if (length(searchers) > 0) {
     dists_to_food <- sqrt((ants$x[searchers] - food_spawn[1])^2 +
                             (ants$y[searchers] - food_spawn[2])^2)
-    ants$state[searchers[dists_to_food < STEP_SIZE]] <- "returning"
+    ants$state[searchers[dists_to_food < FOOD_RADIUS]] <- "returning"
   }
   returners <- which(ants$state == "returning")
   if (length(returners) > 0) {
     dists_to_nest <- sqrt((ants$x[returners] - nest[1])^2 +
                             (ants$y[returners] - nest[2])^2)
-    ants$state[returners[dists_to_nest < STEP_SIZE]] <- "searching"
+    ants$state[returners[dists_to_nest < NEST_RADIUS]] <- "searching"
   }
   
   
@@ -183,16 +189,14 @@ for(step in 1:N_STEPS) {
   # -----
   
   if(step %% DRAW_INTERVAL == 0) {
-    image(
-      1:GRID_SIZE,
-      1:GRID_SIZE,
-      pheromone,
-      col = gray.colors(
-        100,
-        start = 1,
-        end = 0
-      ),
+    plot(
+      NA,
+      xlim = c(1, GRID_SIZE),
+      ylim = c(1, GRID_SIZE),
+      xlab = "",
+      ylab = "",
       axes = FALSE,
+      asp = 1,
       main = paste(
         "Step",
         step,
@@ -224,7 +228,7 @@ for(step in 1:N_STEPS) {
       nest[2],
       pch = 15,
       col = "blue",
-      cex = 2
+      cex = 3
     )
     
     points(
@@ -232,7 +236,7 @@ for(step in 1:N_STEPS) {
       food_spawn[2],
       pch = 15,
       col = "red",
-      cex = 2
+      cex = 3
     )
     
     Sys.sleep(0.1)
