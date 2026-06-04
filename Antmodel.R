@@ -14,7 +14,8 @@ run_sim <- function(
     STEP_SIZE = 1,
     nest = c(50, 5),
     food_spawn = c(50, 95),
-    SAVE_STEPS = c()
+    SAVE_STEPS = c(),
+    png_out = NULL          # <-- NEW: path to save final-step PNG
 ) {
   # set seed for pseudorandomness
   
@@ -172,7 +173,7 @@ run_sim <- function(
         }
         
         speed = STEP_SIZE
-        }
+      }
       
       if(ants$state[i] == "returning") {
         dir <-
@@ -182,17 +183,17 @@ run_sim <- function(
         speed = STEP_SIZE * LOAD_SPEED_MULTIPLIER
       }
       
-        # collision avoidance
-        diffs2 <- cbind(ants$x - pos[1],
-                        ants$y - pos[2])
-        dists2 <- sqrt(rowSums(diffs2^2))
-        near2  <- which(dists2 > 0 & dists2 < SELF_DETECT_RADIUS)
-        
-        if(length(near2) > 0) {
-          weights2  <- 1 / dists2[near2]
-          repel_vec <- unit_vec(colSums(-diffs2[near2, , drop = FALSE] * weights2))
-          dir <- unit_vec(dir + SELF_REPULSION_STRENGTH * repel_vec)
-        }
+      # collision avoidance
+      diffs2 <- cbind(ants$x - pos[1],
+                      ants$y - pos[2])
+      dists2 <- sqrt(rowSums(diffs2^2))
+      near2  <- which(dists2 > 0 & dists2 < SELF_DETECT_RADIUS)
+      
+      if(length(near2) > 0) {
+        weights2  <- 1 / dists2[near2]
+        repel_vec <- unit_vec(colSums(-diffs2[near2, , drop = FALSE] * weights2))
+        dir <- unit_vec(dir + SELF_REPULSION_STRENGTH * repel_vec)
+      }
       
       dir <- unit_vec(dir)
       
@@ -201,7 +202,7 @@ run_sim <- function(
       
       ants$y[i] <- ants$y[i] +
         speed * dir[2]
-  }
+    }
     
     
     
@@ -214,7 +215,7 @@ run_sim <- function(
                               (ants$y[searchers] - food_spawn[2])^2)
       ants$state[searchers[dists_to_food < FOOD_RADIUS]] <- "returning"
     }
-  
+    
     returners <- which(ants$state == "returning")
     
     if (length(returners) > 0) {
@@ -233,7 +234,7 @@ run_sim <- function(
     
     
     # -----
-    # Draw
+    # Draw / save SVG steps
     # -----
     
     if(step %in% SAVE_STEPS) {
@@ -249,6 +250,16 @@ run_sim <- function(
       draw_scene(step)
       Sys.sleep(0.1)
     }
+  }
+  
+  # -----
+  # Save final-step PNG for sweep snapshots
+  # -----
+  if (!is.null(png_out)) {
+    png(png_out, width = 800, height = 400, res = 120)
+    par(mar = c(1, 1, 2, 1))
+    draw_scene(N_STEPS)
+    dev.off()
   }
   
   return(food_count)
