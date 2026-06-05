@@ -7,6 +7,7 @@ run_sim <- function(
     SELF_DETECT_RADIUS = 2,
     SELF_REPULSION_STRENGTH = 3,
     LOAD_SPEED_MULTIPLIER = 0.75,
+    NOISE_RATIO = 0.2,
     MAX_ANTS = 110,
     FOOD_RADIUS = 3,
     NEST_RADIUS = 3,
@@ -147,8 +148,8 @@ run_sim <- function(
       if(ants$state[i] == "searching") {
         dir <-
           # 0.70 * from_nest +
-          0.80 * to_food +
-          0.20 * noise
+          (1-NOISE_RATIO) * to_food +
+          NOISE_RATIO * noise
         
         # traffic rule: move out of way for returning ants
         returners <- which(ants$state == "returning")
@@ -177,8 +178,8 @@ run_sim <- function(
       
       if(ants$state[i] == "returning") {
         dir <-
-          0.80 * to_nest +
-          0.20 * noise
+          (1-NOISE_RATIO) * to_nest +
+          NOISE_RATIO * noise
         
         speed = STEP_SIZE * LOAD_SPEED_MULTIPLIER
       }
